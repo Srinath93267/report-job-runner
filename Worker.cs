@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Options;
 using System.Data;
 using System.Runtime;
 using System.Text;
@@ -8,19 +9,19 @@ namespace ReportJobRunner
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private readonly IConfiguration _configuration;
         private readonly string connectionString = string.Empty;
         private readonly string _secretApiKey = string.Empty;
         private readonly string _apiPrefix = string.Empty;
         private static readonly HttpClient client = new();
+        private readonly AppSettings _settings;
 
-        public Worker(ILogger<Worker> logger, IConfiguration configuration)
+        public Worker(ILogger<Worker> logger, IOptions<AppSettings> options)
         {
             _logger = logger;
-            _configuration = configuration;
-            _secretApiKey = _configuration["ApiSettings:SecretKey"] ?? string.Empty;
-            connectionString = _configuration["ApiSettings:ConnectionString"] ?? string.Empty;
-            _apiPrefix = _configuration["ApiSettings:APIPrefix"] ?? string.Empty;
+            _settings = options.Value;
+            _secretApiKey = $"{_settings.SecretKey}" ?? string.Empty;
+            connectionString = $"{_settings.ConnectionString}" ?? string.Empty;
+            _apiPrefix = $"{_settings.APIPrefix}" ?? string.Empty;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
