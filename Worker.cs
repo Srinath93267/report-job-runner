@@ -13,9 +13,9 @@ namespace ReportJobRunner
         private readonly string _secretApiKey = string.Empty;
         private readonly string _apiPrefix = string.Empty;
         private static readonly HttpClient client = new();
-        private readonly AppSettings _settings;
+        private readonly ApiSettings _settings;
 
-        public Worker(ILogger<Worker> logger, IOptions<AppSettings> options)
+        public Worker(ILogger<Worker> logger, IOptions<ApiSettings> options)
         {
             _logger = logger;
             _settings = options.Value;
