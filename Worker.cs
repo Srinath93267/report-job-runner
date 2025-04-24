@@ -30,55 +30,65 @@ namespace ReportJobRunner
             {
                 if (_logger.IsEnabled(LogLevel.Information))
                 {
-                    string query = "EXEC GET_LOOK_FOR_FINAL_REPORT_REQUEST;";
-                    DataTable reportListTable = new DataTable();
-                    using SqlConnection connection = new(connectionString);
-                    using SqlCommand command = new(query, connection);
-                    try
+                    Console.WriteLine($"Connection String: {connectionString}");
+                    Console.WriteLine($"API Prefix : {_apiPrefix}");
+
+                    if (!String.IsNullOrEmpty(connectionString))
                     {
-                        connection.Open();
-
-                        using SqlDataReader reader = command.ExecuteReader();
-                        if (reader.HasRows)
+                        string query = "EXEC GET_LOOK_FOR_FINAL_REPORT_REQUEST;";
+                        DataTable reportListTable = new DataTable();
+                        using SqlConnection connection = new(connectionString);
+                        using SqlCommand command = new(query, connection);
+                        try
                         {
-                            reportListTable.Load(reader);
-                            reader?.DisposeAsync();
-                            List<int> finalReportIds = [.. reportListTable.AsEnumerable().Select(row => Convert.ToInt32(row[0]))];
-                            foreach (int ReportId in finalReportIds)
+                            connection.Open();
+
+                            using SqlDataReader reader = command.ExecuteReader();
+                            if (reader.HasRows)
                             {
-                                string API = _apiPrefix + "/api/Finance/ProcessNewFinalReportRequest";
-                                // Add Account Number to Header
-                                client.DefaultRequestHeaders.Clear();
-                                client.DefaultRequestHeaders.Add("X-API-KEY", _secretApiKey);
-                                var content = new StringContent(ReportId.ToString(), Encoding.UTF8, "application/json");
+                                reportListTable.Load(reader);
+                                reader?.DisposeAsync();
+                                List<int> finalReportIds = [.. reportListTable.AsEnumerable().Select(row => Convert.ToInt32(row[0]))];
+                                foreach (int ReportId in finalReportIds)
+                                {
+                                    string API = _apiPrefix + "/api/Finance/ProcessNewFinalReportRequest";
+                                    // Add Account Number to Header
+                                    client.DefaultRequestHeaders.Clear();
+                                    client.DefaultRequestHeaders.Add("X-API-KEY", _secretApiKey);
+                                    var content = new StringContent(ReportId.ToString(), Encoding.UTF8, "application/json");
 
-                                HttpResponseMessage response = await client.PutAsync(API, content);
+                                    HttpResponseMessage response = await client.PutAsync(API, content);
 
-                                response.EnsureSuccessStatusCode(); // Throws if not successful
+                                    response.EnsureSuccessStatusCode(); // Throws if not successful
 
-                                string responseData = await response.Content.ReadAsStringAsync();
+                                    string responseData = await response.Content.ReadAsStringAsync();
+                                }
+                            }
+                            else
+                            {
+                                await Task.Delay(60000 * 3, stoppingToken);
                             }
                         }
-                        else
+                        catch (SqlException ex)
                         {
-                            await Task.Delay(60000 * 3, stoppingToken);
+                            _logger.LogError(
+                                             string.Format("An unexpected error occurred while executing the query.\n Error Details:\n{0}", ex.Message)
+                                         );
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(
+                                           string.Format("An unexpected error occurred while executing the query.\n Error Details:\n{0}", ex.Message)
+                                       );
+                        }
+                        finally
+                        {
+                            reportListTable?.Dispose();
                         }
                     }
-                    catch (SqlException ex)
+                    else
                     {
-                        _logger.LogError(
-                                         string.Format("An unexpected error occurred while executing the query.\n Error Details:\n{0}", ex.Message)
-                                     );
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(
-                                       string.Format("An unexpected error occurred while executing the query.\n Error Details:\n{0}", ex.Message)
-                                   );
-                    }
-                    finally
-                    {
-                        reportListTable?.Dispose();
+                        Console.WriteLine($"Connection String is Empty or Null \n Connection String: {connectionString}");
                     }
                 }
             }
