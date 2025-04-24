@@ -7,8 +7,8 @@ builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-builder.Services.Configure<AppSettings>(
-    builder.Configuration.GetSection("AppSettings"));
+builder.Services.Configure<ApiSettings>(
+    builder.Configuration.GetSection("ApiSettings"));
 
 var host = builder.Build();
 host.Run();

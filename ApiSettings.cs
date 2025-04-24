@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ReportJobRunner
 {
-    public class AppSettings
+    public class ApiSettings
     {
         public required string SecretKey { get; set; }
         public required string ConnectionString { get; set; }
