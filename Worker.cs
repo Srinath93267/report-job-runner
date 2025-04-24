@@ -89,6 +89,8 @@ namespace ReportJobRunner
                     else
                     {
                         Console.WriteLine($"Connection String is Empty or Null \n Connection String: {connectionString}");
+                        Console.WriteLine("Going to Sleep for next 12 hours");
+                        await Task.Delay(60000 * 60 * 12 , stoppingToken);
                     }
                 }
             }
