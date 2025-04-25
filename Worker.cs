@@ -70,7 +70,7 @@ namespace ReportJobRunner
                             }
                             else
                             {
-                                Console.WriteLine("There are no pending Final Requests. Sleep started for tne next 3 minutes.");
+                                Console.WriteLine("There are no pending Final Requests. Sleep started for the next 3 minutes.");
                                 await Task.Delay(60000 * 3, stoppingToken);
                             }
                         }
@@ -94,6 +94,8 @@ namespace ReportJobRunner
                     else
                     {
                         Console.WriteLine($"Connection String is Empty or Null \n Connection String: {connectionString}");
+                        Console.WriteLine("Going to Sleep for next 12 hours");
+                        await Task.Delay(60000 * 60 * 12, stoppingToken);
                     }
                 }
             }
