@@ -52,6 +52,8 @@ namespace ReportJobRunner
 
                                     string API = _apiPrefix + "/api/Finance/ProcessNewFinalReportRequest";
 
+                                    Console.WriteLine($"API: {API}");
+
                                     client.DefaultRequestHeaders.Clear();
                                     client.DefaultRequestHeaders.Add("X-API-KEY", _secretApiKey);
 
