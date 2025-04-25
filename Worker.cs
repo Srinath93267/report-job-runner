@@ -30,9 +30,6 @@ namespace ReportJobRunner
             {
                 if (_logger.IsEnabled(LogLevel.Information))
                 {
-                    Console.WriteLine($"Connection String: {connectionString}");
-                    Console.WriteLine($"API Prefix : {_apiPrefix}");
-
                     if (!String.IsNullOrEmpty(connectionString))
                     {
                         string query = "EXEC GET_LOOK_FOR_FINAL_REPORT_REQUEST;";
@@ -51,21 +48,27 @@ namespace ReportJobRunner
                                 List<int> finalReportIds = [.. reportListTable.AsEnumerable().Select(row => Convert.ToInt32(row[0]))];
                                 foreach (int ReportId in finalReportIds)
                                 {
+                                    Console.WriteLine($"Processing the Report ID: {ReportId}");
+
                                     string API = _apiPrefix + "/api/Finance/ProcessNewFinalReportRequest";
-                                    // Add Account Number to Header
+
                                     client.DefaultRequestHeaders.Clear();
                                     client.DefaultRequestHeaders.Add("X-API-KEY", _secretApiKey);
+
                                     var content = new StringContent(ReportId.ToString(), Encoding.UTF8, "application/json");
 
-                                    HttpResponseMessage response = await client.PutAsync(API, content);
+                                    HttpResponseMessage response = await client.PutAsync(API, content, stoppingToken);
 
                                     response.EnsureSuccessStatusCode(); // Throws if not successful
 
-                                    string responseData = await response.Content.ReadAsStringAsync();
+                                    string responseData = await response.Content.ReadAsStringAsync(stoppingToken);
+
+                                    Console.WriteLine($"Report ID: {ReportId} has been processed successfully.");
                                 }
                             }
                             else
                             {
+                                Console.WriteLine("There are no pending Final Requests. Sleep started for tne next 3 minutes.");
                                 await Task.Delay(60000 * 3, stoppingToken);
                             }
                         }
