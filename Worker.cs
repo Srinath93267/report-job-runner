@@ -33,7 +33,7 @@ namespace ReportJobRunner
                     if (!String.IsNullOrEmpty(connectionString))
                     {
                         string query = "EXEC GET_LOOK_FOR_FINAL_REPORT_REQUEST;";
-                        DataTable reportListTable = new DataTable();
+                        DataTable reportListTable = new();
                         using SqlConnection connection = new(connectionString);
                         using SqlCommand command = new(query, connection);
                         try
@@ -50,12 +50,10 @@ namespace ReportJobRunner
                                 {
                                     Console.WriteLine($"Processing the Report ID: {ReportId}");
 
-                                    string API = _apiPrefix + "/api/Finance/ProcessNewFinalReportRequest";
-
-                                    Console.WriteLine($"API: {API}");
+                                    string API = _apiPrefix + "/api/Finance/ProcessNewFinalReportRequest";//API Endpoint preparation
 
                                     client.DefaultRequestHeaders.Clear();
-                                    client.DefaultRequestHeaders.Add("X-API-KEY", _secretApiKey);
+                                    client.DefaultRequestHeaders.Add("X-API-KEY", _secretApiKey);//Add the secret-key in the header of the request
 
                                     var content = new StringContent(ReportId.ToString(), Encoding.UTF8, "application/json");
 
@@ -70,29 +68,30 @@ namespace ReportJobRunner
                             }
                             else
                             {
+                                //Sleep for next 3 minutes if there are no pending requests
                                 Console.WriteLine("There are no pending Final Requests. Sleep started for the next 3 minutes.");
                                 await Task.Delay(60000 * 3, stoppingToken);
                             }
                         }
                         catch (SqlException ex)
                         {
-                            _logger.LogError(
-                                             string.Format("An unexpected error occurred while executing the query.\n Error Details:\n{0}", ex.Message)
-                                         );
+                            _logger.LogError($"An unexpected error occurred while executing the query.\nError Details:\n{ex}");
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(
-                                           string.Format("An unexpected error occurred while executing the query.\n Error Details:\n{0}", ex.Message)
-                                       );
+                            _logger.LogError($"An unexpected error occurred while processing the requests.\nError Details:\n{ex}");
                         }
                         finally
                         {
+                            //Dispose the data table and connections if it is not null
                             reportListTable?.Dispose();
+                            command?.Dispose();
+                            connection?.Dispose();
                         }
                     }
                     else
                     {
+                        //Sleep for 12 hours if the connection string is null
                         Console.WriteLine($"Connection String is Empty or Null \n Connection String: {connectionString}");
                         Console.WriteLine("Going to Sleep for next 12 hours");
                         await Task.Delay(60000 * 60 * 12, stoppingToken);
