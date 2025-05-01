@@ -42,12 +42,13 @@ namespace ReportJobRunner
 
                             using SqlDataReader reader = command.ExecuteReader();
                             if (reader.HasRows)
-                            {
+                            {                              
                                 reportListTable.Load(reader);
                                 reader?.DisposeAsync();
                                 List<int> finalReportIds = [.. reportListTable.AsEnumerable().Select(row => Convert.ToInt32(row[0]))];
                                 foreach (int ReportId in finalReportIds)
-                                {
+                                { 
+                                    await Task.Delay(2000, stoppingToken);//2 Seconds of gap for processing each report
                                     Console.WriteLine($"Processing the Report ID: {ReportId}");
 
                                     string API = _apiPrefix + "/api/Finance/ProcessNewFinalReportRequest";//API Endpoint preparation
