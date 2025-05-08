@@ -69,9 +69,9 @@ namespace ReportJobRunner
                             }
                             else
                             {
-                                //Sleep for next 3 minutes if there are no pending requests
-                                Console.WriteLine("There are no pending Final Requests. Sleep started for the next 3 minutes.");
-                                await Task.Delay(60000 * 3, stoppingToken);
+                                //Sleep for next 10 Seconds if there are no pending requests
+                                Console.WriteLine("There are no pending Final Requests at the Moment. Sleeping for 10 Seconds.");
+                                await Task.Delay(10000, stoppingToken);
                             }
                         }
                         catch (SqlException ex)
